@@ -15,6 +15,7 @@
         <br>
         <label for = "category">Select Category:</label>
         <select name = "category">
+            <option label=" "></option>
             {% for category in categories %}
                 <option value="{{category}}">{{category}}</option>
             {% endfor %}
@@ -23,6 +24,10 @@
     </form>
     <br>
     <label for = "description">Add Description:</label>
-    <textarea name = "description", form = "create_listing_form", placeholder = "Description">Listing Description...</textarea>
+    <textarea name = "description", form = "create_listing_form", placeholder = "Description"></textarea>
+    <br>
+    <div>
+        <input type="submit", form = "create_listing_form" value = "Create New Listing">
+    </div>
 
 {% endblock %}

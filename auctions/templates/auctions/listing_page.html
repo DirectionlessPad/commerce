@@ -1,0 +1,64 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{listing.title}}</h2>
+    {% if listing in user.watchlist.item.all %}
+        <form action="{% url 'watchlist_remove' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{request.path}}">
+            <input type="hidden" name="listing_to_remove" value="{{listing}}">
+            On Watchlist: 
+            <button type="submit">Remove</button>
+        </form>
+    {% else %}
+        <form action="{% url 'watchlist_add' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{request.path}}">
+            <input type="hidden" name="listing_to_add" value={{listing.pk}}>
+            <button type="submit">Add to Watchlist</button>
+        </form>
+    {% endif %}
+    {% if listing.category %}
+        <div>
+            Category: {{listing.category}}
+        </div>
+        <br>
+    {% endif %}
+    {% if listing.image %}
+        <div>
+            <img src={{listing.image}}>
+        </div>
+        <br>
+    {% endif %}
+    <div>
+        <p>{{listing.description}}</p>
+    </div>
+    <div>
+        Listed by: {{listing.seller}}
+    </div>
+    <br>
+    <div>
+        Current bid: £{{listing.current_bid}}
+    </div>
+    <br>
+    <div>
+        <form action="{% url 'view_listing' listing_name=listing.title %}" method="post" id="new_bid">
+            {% csrf_token %}
+            <label for = "new_bid_value">New Bid:</label>
+            <input type = "number" name = "new_bid_value", min= listing.current_bid, value = "{{listing.current_bid}}", step = ".01">
+            <input type="submit" form = "new_bid" value = "Place Bid">
+        </form>
+    </div>
+    <br>
+    <div>
+        <h3>Bidding History</h3>
+        <ul>
+            {% for bid in listing.bids_received.all %}
+            <li>
+                {{bid.bidder}}: {{bid.value}}
+            </li>
+            <br>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
