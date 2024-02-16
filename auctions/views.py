@@ -156,8 +156,9 @@ def watchlist(request):
         "heading": "Your Watchlist"
     })
 
-@login_required
 def watchlist_add(request):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("login"))
     listing_id = request.POST["listing_to_add"]
     listing = Listing.objects.get(pk=listing_id)
     user_watchlist= Watchlist.objects.get(user=request.user)
