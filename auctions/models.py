@@ -13,6 +13,7 @@ class Listing(models.Model):
     image = models.URLField(max_length= 512, null=True, blank=True)
     category = models.CharField(max_length = 64, choices = categories, null=True, blank=True)
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="listings")
+    closed = models.BooleanField(default="False")
 
 
 class Bid(models.Model):
@@ -26,5 +27,5 @@ class Watchlist(models.Model):
 
 class Comment(models.Model):
     comment = models.CharField(max_length=1500, null=True)
-    # item = #some Listing
-    # commenter = #some User
+    item = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="comments")
+    commenter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments_left")

@@ -1,4 +1,4 @@
-
+from django import forms
 
 categories = [
     ("FD", "Food and Drink"),
@@ -8,3 +8,6 @@ categories = [
     ("FA", "Fashion"),
     ("TO", "Toys"),
 ]
+
+class CommentForm(forms.Form):
+    content = forms.CharField(widget=forms.Textarea())
