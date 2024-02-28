@@ -6,18 +6,11 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import messages
 
-from . import categories, CommentForm
+from . import categories
+from .my_forms import BidForm, CommentForm, CreateListingForm
 from .models import User, Listing, Bid, Watchlist, Comment
 
 def index(request):
-    # for listing in Listing.objects.all():
-        # bids = listing.bids_received
-        # max_bid = bids.all().aggregate(Max('value'))["value__max"]
-        # # these lines can probably be removed once I have implemented 
-        # # the bidding system as then I can just update the current_bid 
-        # # property from there
-        # listing.current_bid = max_bid
-        # listing.save()
     listings = Listing.objects.filter(closed="False")
     return render(request, "auctions/index.html", {
         "listings": listings,
@@ -36,6 +29,9 @@ def login_view(request):
         # Check if authentication successful
         if user is not None:
             login(request, user)
+            if not user.watchlist:
+                user_watchlist = Watchlist.objects.create(user=user)
+                user_watchlist.save()
             return HttpResponseRedirect(reverse("index"))
         else:
             return render(request, "auctions/login.html", {
@@ -83,51 +79,56 @@ def create_listing(request):
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
         else:
-            title = request.POST["title"]
-            starting_bid = request.POST["starting_bid"]
-            image = request.POST["image"]
-            category = request.POST["category"]
-            description = request.POST["description"]
-            seller = request.user
-            listing = Listing(
-                title = title,
-                description = description,
-                current_bid = starting_bid,
-                image = image,
-                category = category,
-                seller = seller
-            )
-            listing.save()
-            bid = Bid(
-                value = starting_bid,
-                item = listing,
-            )
-            bid.save()
+            createlistingform = CreateListingForm(request.POST)
+            if createlistingform.is_valid():
+                title = createlistingform.cleaned_data["title"]
+                starting_bid = createlistingform.cleaned_data["current_bid"]
+                image = createlistingform.cleaned_data["image"]
+                category = createlistingform.cleaned_data["category"]
+                description = createlistingform.cleaned_data["description"]
+                seller = request.user
+                listing = Listing(
+                    title = title,
+                    description = description,
+                    current_bid = starting_bid,
+                    image = image,
+                    category = category,
+                    seller = seller
+                )
+                breakpoint()
+                listing.save()
+                bid = Bid(
+                    value = starting_bid,
+                    item = listing,
+                )
+                bid.save()
     return render(request, "auctions/create_listing.html", {
-        "categories": [category[1] for category in categories]
+        "create_form": CreateListingForm,
     })
 
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
+    bidform = BidForm(initial={"value": listing.current_bid})
     if request.method =="POST":
         if not request.user.is_authenticated:
             return HttpResponseRedirect(reverse("login"))
         else:
-            new_bid = float(request.POST["new_bid_value"])
+            bidform = BidForm(request.POST)
             print(listing.current_bid)
-            if new_bid > listing.current_bid:
-                listing.current_bid = new_bid
-                listing.save()
-                bid = Bid(
-                    value = new_bid,
-                    item = listing,
-                    bidder = request.user,
-                )
-                bid.save()
-            else:
-                messages.add_message(request, messages.INFO, "You must bid higher than the current bid.")
+            if bidform.is_valid():
+                new_bid = bidform.cleaned_data["value"]
+                if new_bid > listing.current_bid:
+                    listing.current_bid = new_bid
+                    listing.save()
+                    bid = Bid(
+                        value = new_bid,
+                        item = listing,
+                        bidder = request.user,
+                    )
+                    bid.save()
+                else:
+                    messages.add_message(request, messages.INFO, "You must bid higher than the current bid.")
     if request.user.is_authenticated:
-        # user_watchlist = request.user.watchlist.all()[0]
         user_watchlist = Watchlist.objects.get(user=request.user)
         if listing in user_watchlist.item.all():
             in_watchlist=True
@@ -138,6 +139,7 @@ def listing(request, listing_id):
     return render(request, "auctions/listing_page.html", {
         "listing": listing,
         "in_watchlist": in_watchlist,
+        "bid_form": bidform,
         "highest_bid": Bid.objects.get(item=listing, value=listing.current_bid),
         "comment_form": CommentForm,
         "comments": Comment.objects.filter(item=listing),

@@ -66,9 +66,9 @@
         {% endif %}
         <form action="{% url 'view_listing' listing_id=listing.pk %}" method="post" id="new_bid">
             {% csrf_token %}
+            {{ bid_form }}
             <label for = "new_bid_value">New Bid:</label>
-            <input type = "number" name = "new_bid_value", min= listing.current_bid, value = "{{listing.current_bid}}", step = ".01">
-            <input type="submit" form = "new_bid" value = "Place Bid">
+            <button type="submit">Place Bid</button>
         </form>
     </div>
     <br>
