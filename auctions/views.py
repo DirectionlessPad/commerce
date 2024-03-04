@@ -106,7 +106,7 @@ def create_listing(request):
         "create_form": CreateListingForm,
     })
 
-def listing(request, listing_id):
+def listing(request, listing_id: str):
     listing = Listing.objects.get(pk=listing_id)
     bidform = BidForm(initial={"value": listing.current_bid})
     if request.user.is_authenticated:
@@ -139,7 +139,7 @@ def watchlist(request):
         "heading": "Your Watchlist"
     })
 
-def watchlist_add(request):
+def watchlist_add(request) -> HttpResponseRedirect:
     if not request.user.is_authenticated:
         return HttpResponseRedirect(reverse("login"))
     listing_id = request.POST["listing_to_add"]
