@@ -109,25 +109,6 @@ def create_listing(request):
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
     bidform = BidForm(initial={"value": listing.current_bid})
-    if request.method =="POST":
-        if not request.user.is_authenticated:
-            return HttpResponseRedirect(reverse("login"))
-        else:
-            bidform = BidForm(request.POST)
-            print(listing.current_bid)
-            if bidform.is_valid():
-                new_bid = bidform.cleaned_data["value"]
-                if new_bid > listing.current_bid:
-                    listing.current_bid = new_bid
-                    listing.save()
-                    bid = Bid(
-                        value = new_bid,
-                        item = listing,
-                        bidder = request.user,
-                    )
-                    bid.save()
-                else:
-                    messages.add_message(request, messages.INFO, "You must bid higher than the current bid.")
     if request.user.is_authenticated:
         user_watchlist = Watchlist.objects.get(user=request.user)
         if listing in user_watchlist.item.all():
@@ -175,6 +156,30 @@ def watchlist_remove(request):
     user_watchlist.item.remove(listing)
     return HttpResponseRedirect(reverse("view_listing", args=[listing.pk]))
 
+def new_bid(request, listing_id):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("login"))
+    listing = Listing.objects.get(pk=listing_id)
+    bid_form = BidForm(request.POST)
+    if bid_form.is_valid():
+        bid = bid_form.cleaned_data["value"]
+        if not bid > listing.current_bid:
+            messages.add_message(request, messages.INFO, "You must bid higher than the current bid.")
+            return HttpResponseRedirect(reverse("view_listing", args=[listing_id]))
+        listing.current_bid = bid
+        listing.save()
+        new_bid = Bid(
+            item=listing,
+            bidder=request.user,
+            value=bid,
+        )
+        new_bid.save()
+    return HttpResponseRedirect(reverse("view_listing", args=[listing_id]))
+
+
+
+    
+
 @login_required
 def close_auction(request):
     listing_id = request.POST["listing_to_close"]
@@ -183,19 +188,19 @@ def close_auction(request):
     listing.save()
     return HttpResponseRedirect(reverse("view_listing", args=[listing.pk]))
 
-@login_required
 def add_comment(request, listing_id):
+    if not request.user.is_authenticated:
+        return HttpResponseRedirect(reverse("login"))
     listing = Listing.objects.get(pk=listing_id)
-    if request.user.is_authenticated:
-        comment_form = CommentForm(request.POST)
-        if comment_form.is_valid():
-            comment = comment_form.cleaned_data["content"]
-            new_comment = Comment(
-                commenter=request.user,
-                item=listing,
-                comment=comment,
-                )
-            new_comment.save()
+    comment_form = CommentForm(request.POST)
+    if comment_form.is_valid():
+        comment = comment_form.cleaned_data["content"]
+        new_comment = Comment(
+            commenter=request.user,
+            item=listing,
+            comment=comment,
+            )
+        new_comment.save()
     return HttpResponseRedirect(reverse("view_listing", args=[listing_id]))
 
 def select_category(request):

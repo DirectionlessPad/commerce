@@ -64,7 +64,7 @@
                 <p>{{message}}</p>
             {% endfor %}
         {% endif %}
-        <form action="{% url 'view_listing' listing_id=listing.pk %}" method="post" id="new_bid">
+        <form action="{% url 'newbid' listing_id=listing.pk %}" method="post" id="new_bid">
             {% csrf_token %}
             {{ bid_form }}
             <label for = "new_bid_value">New Bid:</label>
