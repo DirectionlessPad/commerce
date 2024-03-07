@@ -2,29 +2,39 @@
 
 {% block body %}
     <h2>{{heading}}</h2>
-    <ul>
+    <ul style="list-style-type:none;">
         {% if listings %}
             {% for listing in listings %}
                 <li>
-                    <a href = "{% url 'view_listing' listing_id=listing.pk %}">
-                        <span style="display: block;">
-                            <div>
-                                <h3>{{listing.title}}</h3>
-                                {% if listing.category %}
-                                    <div>
-                                        Category: {{listing.category}}
+                    <a href="{% url 'view_listing' listing_id=listing.pk %}" class="listing-link">
+                        <span class="background">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-4 title-link">
+                                        <h3>{{listing.title}}</h3>
                                     </div>
-                                {% endif %}
-                                {% if listing.image %}
-                                    <div>
-                                        <img src={{listing.image}}>
+                                    <div class="col-4">
+                                        {% if listing.category %}
+                                            <div>
+                                                Category: {{listing.category}}
+                                            </div>
+                                        {% endif %}
                                     </div>
-                                {% endif %}
-                                <div>
-                                    <p>{{listing.description}}</p>
+                                    <div class="col-4">
+                                        Current bid: £{{listing.current_bid}}
+                                    </div>
                                 </div>
-                                <div>
-                                    Current bid: £{{listing.current_bid}}
+                                <div class="row">
+                                    <div class="col-5">
+                                        {{listing.description}}
+                                    </div>
+                                    <div class="col-7">
+                                        {% if listing.image %}
+                                            <div>
+                                                <img src={{listing.image}} style="height: 100%; width: 100%; object-fit:contain">
+                                            </div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </span>

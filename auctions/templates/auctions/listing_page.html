@@ -2,101 +2,118 @@
 
 {% block body %}
     <h2>{{listing.title}}</h2>
-    {% if listing.closed %}
-        {% if request.user == highest_bid.bidder %}
-            <p>Congratulations, you won {{listing.title}} with a bid of £{{highest_bid.value}}!</p>
-        {% else %}
-            <p>Auction Closed. Won by {{highest_bid.bidder}} for £{{highest_bid.value}}.</p>
-        {% endif %}
-    {% else %}
-        {% if request.user == highest_bid.bidder %}
-            <p>You are winning the bid on {{listing.title}}!</p>
-        {% elif request.user == listing.seller %}
-            <form action="{% url 'close_auction' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="listing_to_close" value={{listing.pk}}>
-                <button type="submit">Close Auction (The current highest bidder will win the auction).</button>
-            </form>
-        {% endif %}
-    {% endif %}
-    {% if in_watchlist %}
-        <form action="{% url 'watchlist_remove' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="listing_to_remove" value={{listing.pk}}>
-            On Watchlist: 
-            <button type="submit">Remove</button>
-        </form>
-        <br>
-    {% else %}
-        <form action="{% url 'watchlist_add' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="listing_to_add" value={{listing.pk}}>
-            <button type="submit">Add to Watchlist</button>
-        </form>
-        <br>
-    {% endif %}
-    {% if listing.category %}
-        <div>
-            Category: {{listing.category}}
+    <span class="background">
+        <div class="container">
+            <div class="row" style="padding-bottom: 10px;">
+                <div class="col-3">
+                    {% if listing.category %}
+                        <div>
+                            Category: {{listing.category}}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="col-6" style="text-align: center;">
+                    {% if listing.closed %}
+                        {% if request.user == highest_bid.bidder %}
+                            <p>Congratulations, you won {{listing.title}} with a bid of £{{highest_bid.value}}!</p>
+                        {% else %}
+                            <p>Auction Closed. Won by {{highest_bid.bidder}} for £{{highest_bid.value}}.</p>
+                        {% endif %}
+                    {% else %}
+                        {% if request.user == highest_bid.bidder %}
+                            <p>You are winning the bid on {{listing.title}}!</p>
+                        {% elif request.user == listing.seller %}
+                            <form action="{% url 'close_auction' %}" method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="listing_to_close" value={{listing.pk}}>
+                                <button type="submit">Close Auction (The current highest bidder will win the auction).</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="col-3" style="text-align: right;">
+                    {% if in_watchlist %}
+                        <form action="{% url 'watchlist_remove' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="listing_to_remove" value={{listing.pk}}>
+                            On Watchlist: 
+                            <button type="submit">Remove</button>
+                        </form>
+                    {% else %}
+                        <form action="{% url 'watchlist_add' %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="listing_to_add" value={{listing.pk}}>
+                            <button type="submit">Add to Watchlist</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row row-eq-height">
+                <div class="col-5">
+                    <div>
+                        Listed by: {{listing.seller}}
+                    </div>
+                    <div>
+                        Current bid: £{{listing.current_bid}}
+                    </div>
+                    <br>
+                    <div>
+                        <p>{{listing.description}}</p>
+                    </div>
+                    <br>
+                    <div style="position: absolute; bottom: 0px;">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <p>{{message}}</p>
+                            {% endfor %}
+                        {% endif %}
+                        <form action="{% url 'newbid' listing_id=listing.pk %}" method="post" id="new_bid">
+                            {% csrf_token %}
+                            {{ bid_form }}
+                            <button type="submit">Place Bid</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-7">
+                    {% if listing.image %}
+                        <div>
+                            <img src={{listing.image}} style="height: 100%; width: 100%; object-fit:contain">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-        <br>
-    {% endif %}
-    {% if listing.image %}
+    </span>
+    <br>
+    <span class="background">
         <div>
-            <img src={{listing.image}}>
-        </div>
-        <br>
-    {% endif %}
-    <div>
-        <p>{{listing.description}}</p>
-    </div>
-    <div>
-        Listed by: {{listing.seller}}
-    </div>
-    <br>
-    <div>
-        Current bid: £{{listing.current_bid}}
-    </div>
-    <br>
-    <div>
-        {% if messages %}
-            {% for message in messages %}
-                <p>{{message}}</p>
-            {% endfor %}
-        {% endif %}
-        <form action="{% url 'newbid' listing_id=listing.pk %}" method="post" id="new_bid">
-            {% csrf_token %}
-            {{ bid_form }}
-            <label for = "new_bid_value">New Bid:</label>
-            <button type="submit">Place Bid</button>
-        </form>
-    </div>
-    <br>
-    <div>
-        <h3>Bidding History</h3>
-        <ul>
-            {% for bid in listing.bids_received.all %}
-            <li>
-                {{bid.bidder}}: {{bid.value}}
-            </li>
+            <h2>Bidding History</h3>
             <br>
-            {% endfor %}
-        </ul>
-    </div>
+            <ol style="margin-left: 10px;">
+                {% for bid in listing.bids_received.all %}
+                <li>
+                    {{bid.bidder}}: {{bid.value}}
+                </li>
+                <br>
+                {% endfor %}
+            </ol>
+        </div>
+    </span>
     <br>
-    <div>
-        <h4>Comments</h4>
-        <ul>
-            {% for comment in comments %}
-                <li>{{comment.commenter}}: {{comment.comment}}</li>
-            {% endfor %}
-        </ul>
-        <br>
-        <form action="{% url 'add_comment' listing_id=listing.pk %}" method="post" id="new_comment">
-            {% csrf_token %}
-            {{ comment_form }}
-            <label for="new_comment">New Comment:</label>
-            <button type="submit">Add Comment</button>
-        </form>
-    </div>
+    <span class="background">
+        <div>
+            <h2>Comments</h4>
+            <ul>
+                {% for comment in comments %}
+                    <li>{{comment.commenter}}: {{comment.comment}}</li>
+                {% endfor %}
+            </ul>
+            <br>
+            <form action="{% url 'add_comment' listing_id=listing.pk %}" method="post" id="new_comment">
+                {% csrf_token %}
+                {{ comment_form }}
+                <button type="submit">Add Comment</button>
+            </form>
+        </div>
+    </span>
 {% endblock %}

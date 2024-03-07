@@ -1,0 +1,63 @@
+$background_color: rgb(230, 230, 230);
+$text_color: rgb(0, 15, 219);
+$button_color: rgb(69, 107, 213);
+$button_text: rgb(230,230,230);
+
+body {
+    color: $text_color;
+    padding: 10px;
+}
+
+h1 {
+    margin-left: 30px;
+    font-size: 50px;
+}
+
+h2 {
+    color: $text_color;
+    margin-left: 20px;
+}
+
+span.background {
+    display: block;
+    background-color: $background_color;
+    color: $text_color;
+    padding: 10px;
+    margin: 15px;
+}
+
+.nav {
+    background-color: $background_color;
+    margin-top: 5px;
+}
+
+.nav-link {
+    color: $text_color;
+}
+
+.listing-link:hover {
+    text-decoration: none;
+}
+
+.title-link:hover{
+    text-decoration: underline;
+}
+
+#category-link {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+#category-link > div {
+    background-color: $background_color;
+    color: $text_color;
+    font-size: 20px;
+    margin: 20px;
+    padding: 20px;
+    width: 200px;
+}
+
+button {
+    background-color: $button_color;
+    color: $button_text;
+}

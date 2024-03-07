@@ -7,7 +7,7 @@ class CreateListingForm(forms.ModelForm):
         fields = ["title", "description", "current_bid", "image", "category"]
 
 class BidForm(forms.Form):
-    value = forms.DecimalField(max_digits=17, decimal_places = 2)
+    value = forms.DecimalField(label="New Bid:", max_digits=17, decimal_places = 2)
 
 class CommentForm(forms.Form):
-    content = forms.CharField(widget=forms.Textarea())
+    content = forms.CharField(label="New Comment", widget=forms.Textarea(attrs={"rows":"4","style":"vertical-align:top;"}))
